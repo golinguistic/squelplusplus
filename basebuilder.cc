@@ -2,10 +2,9 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <functional>
 
 using namespace std;
-
-
 
 basebuilder::basebuilder() {
     
@@ -26,6 +25,14 @@ basebuilder::basebuilder() {
     defaults.stringFormatter = "";
     defaults.rawNesting = false;
     
+}
+
+// Takes any map of value handlers and adds an entry
+void registerValueHandler(map<std::string, std::function<void()>>* valueHandlers, std::string type, function<void()> handler){
+    if(valueHandlers->count(type))
+        return;
+    
+    valueHandlers->insert(std::pair<string, std::function<void()>>(type, handler)); 
 }
 
 std::string basebuilder::escapeValue(std::string v){

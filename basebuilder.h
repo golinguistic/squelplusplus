@@ -1,7 +1,11 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <functional>
 using namespace std;
+
+void registerValueHandler(std::map<std::string, std::function<void()>>* valueHandlers, std::string type, function<void()> handler);
+
 class basebuilder {
     
     struct QueryBuilderOptions{
@@ -19,7 +23,7 @@ class basebuilder {
         // The quote character used for when quoting table alias names
         char fieldAliasQuoteCharacter;
         // Custom value handlers where key is the value type and the value is the handler function
-        map<string, void (*)(int)> valueHandlers;
+        map<string, std::function<void()>> valueHandlers;
         // Character used to represent a parameter value
         char parameterCharacter;
         // Numbered parameters returned from toParam() as $1, $2, etc.
@@ -67,12 +71,14 @@ class basebuilder {
         return result;
     }
     
+    void registerValueHandler(std::string type, std::function<void()> handler);
     std::string escapeValue(std::string v);
     std::string formatTableName(std::string item);
     std::string formatFieldAlias(std::string item);
     std::string formatTableAlias(std::string item);
     std::string formatFieldName(std::string item, bool ignorePeriodsForFieldNameQuotes);
     // std::string formatCustomValue(std::string item, function)
+    std::string formatValueForParamArray(std::string value);
     
     
     QueryBuilderOptions defaults;
