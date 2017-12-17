@@ -4,7 +4,9 @@
 #include <functional>
 using namespace std;
 
-void registerValueHandler(std::map<std::string, std::function<void()>>* valueHandlers, std::string type, function<void()> handler);
+void registerValueHandler(std::map<std::string, std::function<std::string()>>* valueHandlers, std::string type, function<std::string()> handler);
+
+function<std::string()> getValueHandler(std::string value, std::map<std::string, std::function<std::string()>>* valueHandlers); 
 
 class basebuilder {
     
@@ -23,7 +25,7 @@ class basebuilder {
         // The quote character used for when quoting table alias names
         char fieldAliasQuoteCharacter;
         // Custom value handlers where key is the value type and the value is the handler function
-        map<string, std::function<void()>> valueHandlers;
+        map<string, std::function<std::string()>> valueHandlers;
         // Character used to represent a parameter value
         char parameterCharacter;
         // Numbered parameters returned from toParam() as $1, $2, etc.
@@ -71,7 +73,7 @@ class basebuilder {
         return result;
     }
     
-    void registerValueHandler(std::string type, std::function<void()> handler);
+    void registerValueHandler(std::string type, std::function<std::string()> handler);
     std::string escapeValue(std::string v);
     std::string formatTableName(std::string item);
     std::string formatFieldAlias(std::string item);

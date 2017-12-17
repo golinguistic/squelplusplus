@@ -28,11 +28,16 @@ basebuilder::basebuilder() {
 }
 
 // Takes any map of value handlers and adds an entry
-void registerValueHandler(map<std::string, std::function<void()>>* valueHandlers, std::string type, function<void()> handler){
+void registerValueHandler(map<std::string, std::function<std::string()>>* valueHandlers, std::string type, function<std::string()> handler){
     if(valueHandlers->count(type))
         return;
     
-    valueHandlers->insert(std::pair<string, std::function<void()>>(type, handler)); 
+    valueHandlers->insert(std::pair<string, std::function<std::string()>>(type, handler)); 
+}
+
+// Get value handler for given type
+function<std::string()> getValueHandler(std::string value, std::map<std::string, std::function<std::string()>>* valueHandlers){
+    return valueHandlers->at(value);    
 }
 
 std::string basebuilder::escapeValue(std::string v){
