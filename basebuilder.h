@@ -1,18 +1,25 @@
+#pragma once
+
 #include <string>
 #include <map>
 #include <vector>
 #include <functional>
 using namespace std;
 
-void registerValueHandler(std::map<std::string, std::function<std::string()>>* valueHandlers, std::string type, function<std::string()> handler);
+typedef tuple<bool, bool, string> handler_tuple;
+typedef function<handler_tuple(string, string, map<string,string>)> handlerfunc;
 
-function<std::string()> getValueHandler(std::string value, std::map<std::string, std::function<std::string()>>* valueHandlers); 
+void registerValueHandler(map<string,handlerfunc>* valueHandlers, std::string type, handlerfunc handler);
+handlerfunc getValueHandler(string value, map<string, handlerfunc>* valueHandlers);
+
+extern map<string, handlerfunc> globalValueHandlers;
+
 
 class basebuilder {
     
     struct QueryBuilderOptions{
         bool autoQuoteTableNames;
-        // If true then field names will rendered inside quotes. The quote character used is configurable via the nameQuoteCharacter option.
+        // If true then field names will render ed inside quotes. The quote character used is configurable via the nameQuoteCharacter option.
         bool autoQuoteFieldNames;
         // If true then alias names will rendered inside quotes. The quote character used is configurable via the `tableAliasQuoteCharacter` and `fieldAliasQuoteCharacter` options.
         bool autoQuoteAliasNames;
@@ -25,7 +32,7 @@ class basebuilder {
         // The quote character used for when quoting table alias names
         char fieldAliasQuoteCharacter;
         // Custom value handlers where key is the value type and the value is the handler function
-        map<string, std::function<std::string()>> valueHandlers;
+        map<string,handlerfunc> valueHandlers;
         // Character used to represent a parameter value
         char parameterCharacter;
         // Numbered parameters returned from toParam() as $1, $2, etc.
@@ -79,8 +86,8 @@ class basebuilder {
     std::string formatFieldAlias(std::string item);
     std::string formatTableAlias(std::string item);
     std::string formatFieldName(std::string item, bool ignorePeriodsForFieldNameQuotes);
-    // std::string formatCustomValue(std::string item, function)
-    std::string formatValueForParamArray(std::string value);
+    handler_tuple formatCustomValue(std::string item, std::string param, std::map<std::string,std::string> options);
+    std::string formatValueForParamArray(std::string value, std::map<std::string,std::string> options);
     
     
     QueryBuilderOptions defaults;

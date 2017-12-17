@@ -27,16 +27,20 @@ basebuilder::basebuilder() {
     
 }
 
+typedef tuple<bool, bool, string> handler_tuple;
+typedef function<handler_tuple(string, string, map<string,string>)> handlerfunc;
+
+
 // Takes any map of value handlers and adds an entry
-void registerValueHandler(map<std::string, std::function<std::string()>>* valueHandlers, std::string type, function<std::string()> handler){
+void registerValueHandler(map<string, handlerfunc>* valueHandlers, string type, handlerfunc handler){
     if(valueHandlers->count(type))
         return;
     
-    valueHandlers->insert(std::pair<string, std::function<std::string()>>(type, handler)); 
+    valueHandlers->insert(pair<string, handlerfunc>(type, handler)); 
 }
 
 // Get value handler for given type
-function<std::string()> getValueHandler(std::string value, std::map<std::string, std::function<std::string()>>* valueHandlers){
+handlerfunc getValueHandler(string value, map<string, handlerfunc>* valueHandlers){
     return valueHandlers->at(value);    
 }
 
@@ -73,6 +77,16 @@ std::string basebuilder::formatTableAlias(std::string item){
         return "AS " + item;
     else
         return item;
+}
+// Tuple is Formatted, rawNesting, value
+tuple<bool, bool, string>  basebuilder::formatCustomValue(string value, string param, map<string,string> options){
+    auto customHandler = getValueHandler(value, &defaults.valueHandlers);
+    
+    if(customHandler){
+        handler_tuple handlervalue = customHandler(value, param, options);
+    }
+    
+    return tuple<bool, bool, string>(false,false,value);
 }
 
 std::string basebuilder::formatFieldName(std::string item, bool ignorePeriodsForFieldNameQuotes){
