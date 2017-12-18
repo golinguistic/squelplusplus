@@ -22,7 +22,7 @@ using namespace std;
         // The quote character used for when quoting table alias names
         char fieldAliasQuoteCharacter;
         // Custom value handlers where key is the value type and the value is the handler function
-        map<string,function<tuple<bool, bool, string>(string, string, formatOptions*)>> valueHandlers;
+        map<string,function<tuple<bool, bool, string>(string, bool, formatOptions*)>> valueHandlers;
         // Character used to represent a parameter value
         char parameterCharacter;
         // Numbered parameters returned from toParam() as $1, $2, etc.
@@ -44,7 +44,7 @@ using namespace std;
     } formatOptions;
 
 typedef tuple<bool, bool, string> handler_tuple;
-typedef function<handler_tuple(string, string, formatOptions*)> handlerfunc;
+typedef function<handler_tuple(string, bool, formatOptions*)> handlerfunc;
 
 void registerValueHandler(map<string,handlerfunc>* valueHandlers, std::string type, handlerfunc handler);
 handlerfunc getValueHandler(string value, map<string, handlerfunc>* valueHandlers);
@@ -88,8 +88,9 @@ class basebuilder {
     std::string formatFieldAlias(std::string item);
     std::string formatTableAlias(std::string item);
     std::string formatFieldName(std::string item, bool ignorePeriodsForFieldNameQuotes);
-    handler_tuple formatCustomValue(std::string item, string param, formatOptions options);
+    handler_tuple formatCustomValue(std::string item, bool asParam, formatOptions options);
     std::string formatValueForParamArray(vector<string> value, formatOptions options);
+    std::string applyNestingFormatting(string value, bool nesting);
     
     formatOptions defaults;
 };

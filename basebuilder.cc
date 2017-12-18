@@ -28,7 +28,7 @@ basebuilder::basebuilder() {
 }
 
 typedef tuple<bool, bool, string> handler_tuple;
-typedef function<handler_tuple(string, string, formatOptions*)> handlerfunc;
+typedef function<handler_tuple(string, bool, formatOptions*)> handlerfunc;
 
 
 // Takes any map of value handlers and adds an entry
@@ -79,11 +79,11 @@ std::string basebuilder::formatTableAlias(std::string item){
         return item;
 }
 // Tuple is Formatted, rawNesting, value
-tuple<bool, bool, string>  basebuilder::formatCustomValue(string value, string param, formatOptions options){
+tuple<bool, bool, string>  basebuilder::formatCustomValue(string value, bool asParam, formatOptions options){
     auto customHandler = getValueHandler(value, &defaults.valueHandlers);
     
     if(customHandler){
-        handler_tuple handlervalue = customHandler(value, param, &options);
+        handler_tuple handlervalue = customHandler(value, asParam, &options);
     
         if (get<1>(handlervalue)){ // if raw nesting is true
             return make_tuple(true,true,get<2>(handlervalue));
@@ -115,10 +115,42 @@ std::string basebuilder::formatValueForParamArray(vector<string> value, formatOp
         for_each(value.begin(),value.end(),[this,&options](string n){vector<string> v = {n}; this->formatValueForParamArray(v,options);});
     }
     else{
-        auto ret = this->formatCustomValue(value.at(0), "true", options);
+        auto ret = this->formatCustomValue(value.at(0), true, options);
         return get<2>(ret);
     }
     
     return "";
 }
 
+string basebuilder::applyNestingFormatting(string value, bool nesting){
+    if(!defaults.rawNesting && nesting){
+        bool alreadyHasBrackets = false;
+        if('(' == value.front() && ')' == value.back())
+            alreadyHasBrackets = true;
+        
+        if(alreadyHasBrackets){
+            int idx = 0;
+            int open = 1;
+            
+            while(value.size() - 1 > ++idx){
+                char c = value.at(idx);
+                
+                if( '(' == c){
+                    open++;
+                } else if (')' == c) {
+                    open--;
+                    if( 1 > open) {
+                        alreadyHasBrackets = false;
+                        
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (!alreadyHasBrackets){
+            value = '(' + value + ')';
+        }
+    }
+    return value;
+}
