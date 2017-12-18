@@ -28,7 +28,7 @@ basebuilder::basebuilder() {
 }
 
 typedef tuple<bool, bool, string> handler_tuple;
-typedef function<handler_tuple(string, string, map<string,string>)> handlerfunc;
+typedef function<handler_tuple(string, string, formatOptions*)> handlerfunc;
 
 
 // Takes any map of value handlers and adds an entry
@@ -79,17 +79,21 @@ std::string basebuilder::formatTableAlias(std::string item){
         return item;
 }
 // Tuple is Formatted, rawNesting, value
-tuple<bool, bool, string>  basebuilder::formatCustomValue(string value, string param, map<string,string> options){
+tuple<bool, bool, string>  basebuilder::formatCustomValue(string value, string param, formatOptions options){
     auto customHandler = getValueHandler(value, &defaults.valueHandlers);
     
     if(customHandler){
-        handler_tuple handlervalue = customHandler(value, param, options);
+        handler_tuple handlervalue = customHandler(value, param, &options);
+    
+        if (get<1>(handlervalue)){ // if raw nesting is true
+            return make_tuple(true,true,get<2>(handlervalue));
+        }
     }
     
-    return tuple<bool, bool, string>(false,false,value);
+    return make_tuple(false,false,value);
 }
 
-std::string basebuilder::formatFieldName(std::string item, bool ignorePeriodsForFieldNameQuotes){
+string basebuilder::formatFieldName(std::string item, bool ignorePeriodsForFieldNameQuotes){
     if(defaults.autoQuoteFieldNames){
         
         char quoteChar = defaults.nameQuoteCharacter;
@@ -105,4 +109,16 @@ std::string basebuilder::formatFieldName(std::string item, bool ignorePeriodsFor
     return item;
 }
 
+std::string basebuilder::formatValueForParamArray(vector<string> value, formatOptions options){
+    
+    if(value.size() > 1){
+        for_each(value.begin(),value.end(),[this,&options](string n){vector<string> v = {n}; this->formatValueForParamArray(v,options);});
+    }
+    else{
+        auto ret = this->formatCustomValue(value.at(0), "true", options);
+        return get<2>(ret);
+    }
+    
+    return "";
+}
 
